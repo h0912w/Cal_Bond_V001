@@ -1,42 +1,84 @@
+<!-- templates/bonds/calculate_bond.html -->
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리이쁜기오기</title>
-    <!-- 부트스트랩 CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 커스텀 CSS -->
+    <title>채권이자 계산기</title>
     <style>
-        /* 추가적인 스타일링을 위한 CSS */
+        /* Add your custom CSS for responsiveness here */
         body {
-            background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
         }
-        .jumbotron {
-            background-image: url('background.jpg'); /* 배경 이미지 파일 경로 */
-            background-size: cover;
-            color: #fff;
-            text-shadow: 2px 2px 4px #000000;
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .love-message {
-            font-size: 24px;
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="jumbotron text-center">
-        <h1 class="display-4">우리이쁀기옥이</h1>
-        <p class="lead love-message">내 인생의 빛, 나의 사랑 이기옥에게</p>
-        <hr class="my-4">
-        <p>당신과 함께하는 모든 순간이 행복해요.</p>
-        <a class="btn btn-primary btn-lg" href="#" role="button">더 알아보기</a>
+    <div class="container">
+        <h1>채권이자 계산기</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="발행일">발행일:</label>
+                <input type="date" id="발행일" name="발행일" required>
+            </div>
+            <div class="form-group">
+                <label for="만기일">만기일:</label>
+                <input type="date" id="만기일" name="만기일" required>
+            </div>
+            <div class="form-group">
+                <label for="표면금리">표면금리:</label>
+                <input type="number" id="표면금리" name="표면금리" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="만기금리">만기금리:</label>
+                <input type="number" id="만기금리" name="만기금리" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="이자지급주기">이자지급주기:</label>
+                <input type="number" id="이자지급주기" name="이자지급주기" required>
+            </div>
+            <input type="submit" value="계산하기">
+        </form>
     </div>
-
-    <!-- 부트스트랩 JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
