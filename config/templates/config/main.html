@@ -55,7 +55,7 @@
 <body>
     <div class="container">
         <h1>채권이자 계산기</h1>
-        <form method="post">
+        <form method="post" id="bondForm">
             {% csrf_token %}
             <div class="form-group">
                 <label for="발행일">발행일:</label>
@@ -64,6 +64,10 @@
             <div class="form-group">
                 <label for="만기일">만기일:</label>
                 <input type="date" id="만기일" name="만기일" required>
+            </div>
+            <div class="form-group">
+                <label for="오늘날짜">오늘 날짜:</label>
+                <input type="date" id="오늘날짜" name="오늘날짜" required>
             </div>
             <div class="form-group">
                 <label for="표면금리">표면금리:</label>
@@ -79,6 +83,49 @@
             </div>
             <input type="submit" value="계산하기">
         </form>
+        <div id="interestDates"></div>
+        <div id="totalInterest"></div>
     </div>
+    <script>
+        // 오늘 날짜를 가져와서 오늘 날짜 입력란에 설정
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        document.getElementById('오늘날짜').value = today;
+
+        // 이자가 지급되는 날짜를 계산하여 출력하는 함수
+        function calculateInterestDates() {
+            var issueDate = new Date(document.getElementById('발행일').value);
+            var maturityDate = new Date(document.getElementById('만기일').value);
+            var interestPaymentCycle = parseInt(document.getElementById('이자지급주기').value);
+            var today = new Date(document.getElementById('오늘날짜').value);
+            var interestDates = [];
+            for (var date = new Date(issueDate); date <= maturityDate; date.setMonth(date.getMonth() + interestPaymentCycle)) {
+                if (date <= maturityDate && date >= today) {
+                    interestDates.push(new Date(date));
+                }
+            }
+            return interestDates;
+        }
+
+        // form 제출 이벤트 핸들러
+        document.getElementById('bondForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var interestDates = calculateInterestDates();
+            var interestDatesOutput = "";
+            for (var i = 0; i < interestDates.length; i++) {
+                interestDatesOutput += interestDates[i].toLocaleDateString() + "<br>";
+            }
+            document.getElementById('interestDates').innerHTML = "<strong>이자가 지급되는 횟수:</strong> " + interestDates.length + "<br>" + interestDatesOutput;
+
+            // 받게되는 이자 총액 계산
+            var interestPaymentCycle = parseInt(document.getElementById('이자지급주기').value);
+            var surfaceInterest = parseFloat(document.getElementById('표면금리').value);
+            var totalInterest = interestDates.length * surfaceInterest * 100 * (interestPaymentCycle / 12);
+            document.getElementById('totalInterest').innerHTML = "<strong>받게되는 이자 총액:</strong> " + totalInterest.toFixed(2);
+        });
+    </script>
 </body>
 </html>
