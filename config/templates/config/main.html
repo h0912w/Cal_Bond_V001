@@ -50,6 +50,19 @@
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -59,11 +72,11 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="발행일">발행일:</label>
-                <input type="date" id="발행일" name="발행일" required>
+                <input type="date" id="발행일" name="발행일" value="2021-02-01" required>
             </div>
             <div class="form-group">
                 <label for="만기일">만기일:</label>
-                <input type="date" id="만기일" name="만기일" required>
+                <input type="date" id="만기일" name="만기일" value="2032-02-01" required>
             </div>
             <div class="form-group">
                 <label for="오늘날짜">오늘 날짜:</label>
@@ -83,8 +96,9 @@
             </div>
             <input type="submit" value="계산하기">
         </form>
-        <div id="interestDates"></div>
+        <table id="interestTable"></table>
         <div id="totalInterest"></div>
+        <div id="totalPayments"></div>
     </div>
     <script>
         // 오늘 날짜를 가져와서 오늘 날짜 입력란에 설정
@@ -94,6 +108,12 @@
         var yyyy = today.getFullYear();
         today = yyyy + '-' + mm + '-' + dd;
         document.getElementById('오늘날짜').value = today;
+
+        // 요일 반환 함수
+        function getDayOfWeek(date) {
+            var days = ['일', '월', '화', '수', '목', '금', '토'];
+            return days[date.getDay()];
+        }
 
         // 이자가 지급되는 날짜를 계산하여 출력하는 함수
         function calculateInterestDates() {
@@ -114,17 +134,20 @@
         document.getElementById('bondForm').addEventListener('submit', function(event) {
             event.preventDefault();
             var interestDates = calculateInterestDates();
-            var interestDatesOutput = "";
+            var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>지급 예정 이자</th><th>요일</th></tr>";
+            var totalInterest = 0;
             for (var i = 0; i < interestDates.length; i++) {
-                interestDatesOutput += interestDates[i].toLocaleDateString() + "<br>";
+                var interest = parseFloat(document.getElementById('표면금리').value) * 100;
+                var dayOfWeek = getDayOfWeek(interestDates[i]);
+                interestTable += "<tr><td>" + interestDates[i].toLocaleDateString() + "</td><td>" + interest.toFixed(2) + "</td><td>" + dayOfWeek + "</td></tr>";
+                totalInterest += interest;
             }
-            document.getElementById('interestDates').innerHTML = "<strong>이자가 지급되는 횟수:</strong> " + interestDates.length + "<br>" + interestDatesOutput;
+            document.getElementById('interestTable').innerHTML = interestTable;
 
-            // 받게되는 이자 총액 계산
-            var interestPaymentCycle = parseInt(document.getElementById('이자지급주기').value);
-            var surfaceInterest = parseFloat(document.getElementById('표면금리').value);
-            var totalInterest = interestDates.length * surfaceInterest * 100 * (interestPaymentCycle / 12);
+            // 받게되는 이자 총액 및 총 횟수 계산
+            var totalPayments = interestDates.length;
             document.getElementById('totalInterest').innerHTML = "<strong>받게되는 이자 총액:</strong> " + totalInterest.toFixed(2);
+            document.getElementById('totalPayments').innerHTML = "<strong>이자가 지급되는 횟수:</strong> " + totalPayments;
         });
     </script>
 </body>
