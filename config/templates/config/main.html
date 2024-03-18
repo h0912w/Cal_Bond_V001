@@ -134,12 +134,11 @@
         document.getElementById('bondForm').addEventListener('submit', function(event) {
             event.preventDefault();
             var interestDates = calculateInterestDates();
-            var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>지급 예정 이자</th><th>요일</th></tr>";
+            var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>요일</th><th>지급 예정 이자</th></tr>";
             var totalInterest = 0;
             for (var i = 0; i < interestDates.length; i++) {
                 var interest = parseFloat(document.getElementById('표면금리').value) * 100;
-                var dayOfWeek = getDayOfWeek(interestDates[i]);
-                interestTable += "<tr><td>" + interestDates[i].toLocaleDateString() + "</td><td>" + interest.toFixed(2) + "</td><td>" + dayOfWeek + "</td></tr>";
+                interestTable += "<tr><td>" + interestDates[i].toLocaleDateString() + "</td><td>" + getDayOfWeek(interestDates[i]) + "</td><td>" + interest.toFixed(2) + "</td></tr>";
                 totalInterest += interest;
             }
             document.getElementById('interestTable').innerHTML = interestTable;
