@@ -122,11 +122,27 @@
             var interestPaymentCycle = parseInt(document.getElementById('이자지급주기').value);
             var today = new Date(document.getElementById('오늘날짜').value);
             var interestDates = [];
+
+
+            // 첫 번째 열의 날짜 계산
             for (var date = new Date(issueDate); date <= maturityDate; date.setMonth(date.getMonth() + interestPaymentCycle)) {
-                if (date <= maturityDate && date >= today) {
-                    interestDates.push(new Date(date));
+                interestDates.push(new Date(date));
+            }
+
+            // 주말인 경우 다음 월요일로 변경
+            for (var i = 0; i < interestDates.length; i++) {
+                if (interestDates[i] > today) { // 오늘 이후인 경우에만 처리
+                    if (interestDates[i].getDay() === 0) { // 일요일인 경우
+                        interestDates[i].setDate(interestDates[i].getDate() + 1); // 월요일로 변경
+                    } else if (interestDates[i].getDay() === 6) { // 토요일인 경우
+                        interestDates[i].setDate(interestDates[i].getDate() + 2); // 월요일로 변경
+                    }
+                } else {
+                    interestDates.splice(i, 1); // 오늘 이전인 경우 해당 데이터를 삭제
+                    i--; // 인덱스를 조정하여 배열 순회 중인 변수의 위치를 올바르게 유지
                 }
             }
+
             return interestDates;
         }
 
