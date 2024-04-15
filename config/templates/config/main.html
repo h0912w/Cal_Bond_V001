@@ -1,19 +1,20 @@
-<!-- templates/bonds/calculate_bond.html -->
-
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채권이자 계산기</title>
     <style>
-        /* Add your custom CSS for responsiveness here */
+        /* 스타일 시트 정의 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f2f2f2;
         }
+
         .container {
             max-width: 600px;
             margin: 50px auto;
@@ -22,14 +23,17 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
         }
+
         input[type="date"],
         input[type="number"] {
             width: 100%;
@@ -38,6 +42,7 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         input[type="submit"] {
             width: 100%;
             padding: 10px;
@@ -47,24 +52,30 @@
             color: #fff;
             cursor: pointer;
         }
+
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>채권이자 계산기</h1>
@@ -83,22 +94,27 @@
                 <input type="date" id="오늘날짜" name="오늘날짜" required>
             </div>
             <div class="form-group">
+                <label for="현재가격">현재가격:</label>
+                <input type="number" id="현재가격" name="현재가격" value="10000" step="0.01" required>
+            </div>
+            <div class="form-group">
                 <label for="표면금리">표면금리:</label>
                 <input type="number" id="표면금리" name="표면금리" step="0.01" required>
             </div>
             <div class="form-group">
-                <label for="만기금리">만기금리:</label>
-                <input type="number" id="만기금리" name="만기금리" step="0.01" required>
+                <label for="만기수익률">만기 수익률:</label> <!-- "만기금리" -> "만기 수익률" -->
+                <input type="number" id="만기수익률" name="만기수익률" step="0.01" required> <!-- "만기금리" -> "만기 수익률" -->
             </div>
             <div class="form-group">
                 <label for="이자지급주기">이자지급주기:</label>
                 <input type="number" id="이자지급주기" name="이자지급주기" required>
             </div>
             <input type="submit" value="계산하기">
+            <div id="totalInterest"></div> <!-- 채권이자 합계 표시 div 요소 -->
+            <div id="investmentPeriod"></div> <!-- 투자기간을 표시할 div 요소 -->
+            <div id="interestPaymentCount"></div> <!-- 이자지급횟수 표시할 div 요소 -->
         </form>
         <table id="interestTable"></table>
-        <div id="totalInterest"></div>
-        <div id="totalPayments"></div>
     </div>
     <script>
         // 오늘 날짜를 가져와서 오늘 날짜 입력란에 설정
@@ -123,7 +139,6 @@
             var today = new Date(document.getElementById('오늘날짜').value);
             var interestDates = [];
 
-
             // 첫 번째 열의 날짜 계산
             for (var date = new Date(issueDate); date <= maturityDate; date.setMonth(date.getMonth() + interestPaymentCycle)) {
                 interestDates.push(new Date(date));
@@ -146,9 +161,21 @@
             return interestDates;
         }
 
+
+        // 투자 기간을 계산하고 반환하는 함수
+        function calculateInvestmentPeriod() {
+            var todayDate = new Date(document.getElementById('오늘날짜').value);
+            var maturityDate = new Date(document.getElementById('만기일').value);
+            var diffTime = maturityDate - todayDate;
+            var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 일 단위로 계산
+            return diffDays;
+        }
+
+
         // form 제출 이벤트 핸들러
         document.getElementById('bondForm').addEventListener('submit', function(event) {
             event.preventDefault();
+
             var interestDates = calculateInterestDates();
             var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>요일</th><th>지급 예정 이자</th></tr>";
             var totalInterest = 0;
@@ -159,11 +186,28 @@
             }
             document.getElementById('interestTable').innerHTML = interestTable;
 
-            // 받게되는 이자 총액 및 총 횟수 계산
-            var totalPayments = interestDates.length;
-            document.getElementById('totalInterest').innerHTML = "<strong>받게되는 이자 총액:</strong> " + totalInterest.toFixed(2);
-            document.getElementById('totalPayments').innerHTML = "<strong>이자가 지급되는 횟수:</strong> " + totalPayments;
+            // 투자 기간 계산
+            var investmentPeriod = calculateInvestmentPeriod();
+            document.getElementById('investmentPeriod').innerHTML = "<strong>투자 기간:</strong> " + investmentPeriod + "일";
+
+            // 이자가 지급되는 횟수 계산 및 표시
+            var interestPaymentCount = interestDates.length;
+            document.getElementById('interestPaymentCount').innerHTML += "<strong>이자가 지급되는 횟수:</strong> " + interestPaymentCount + "회";
+
+
+            // 채권이자 합계 표시
+            document.getElementById('totalInterest').innerHTML = "<strong>채권이자 합계:</strong> " + totalInterest.toFixed(2);
+
+            // 만기 수익률 계산
+            var maturityYield = parseFloat(document.getElementById('만기수익률').value) * 100; // "만기금리" -> "만기 수익률"
+
+            // 만기 수익률 표시
+            var maturityYieldElement = document.createElement('div'); // "만기금리" -> "만기 수익률"
+            maturityYieldElement.innerHTML = "<strong>만기 지급 이자:</strong> " + maturityYield.toFixed(2); // "만기금리" -> "만기 수익률"
+            document.getElementById('totalInterest').appendChild(maturityYieldElement);
         });
+
     </script>
 </body>
+
 </html>
