@@ -161,7 +161,6 @@
             return interestDates;
         }
 
-
         // 투자 기간을 계산하고 반환하는 함수
         function calculateInvestmentPeriod() {
             var todayDate = new Date(document.getElementById('오늘날짜').value);
@@ -177,13 +176,26 @@
             event.preventDefault();
 
             var interestDates = calculateInterestDates();
-            var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>요일</th><th>지급 예정 이자</th></tr>";
+            var interestTable = "<tr><th>이자가 지급되는 날짜</th><th>요일</th><th>지급 예정 이자</th><th>만기수익률 역산 이자</th></tr>";
             var totalInterest = 0;
+            var maturityInterestTotal = 0; // 만기 지급 이자의 총합을 저장할 변수 추가
+
             for (var i = 0; i < interestDates.length; i++) {
-                var interest = parseFloat(document.getElementById('표면금리').value) * 100;
-                interestTable += "<tr><td>" + interestDates[i].toLocaleDateString() + "</td><td>" + getDayOfWeek(interestDates[i]) + "</td><td>" + interest.toFixed(2) + "</td></tr>";
+                var surfaceRate = parseFloat(document.getElementById('표면금리').value) * 100; // 표면금리 계산
+                var interest = surfaceRate; // 지급 예정 이자
+                var maturityYield = parseFloat(document.getElementById('만기수익률').value) * 100; // 만기 수익률 계산
+                var interestPaymentCycle = parseInt(document.getElementById('이자지급주기').value);
+
+                // 만기 수익률을 기반으로 역산된 이자 계산
+                var a = ((maturityYield - surfaceRate) / (12 / interestPaymentCycle));
+                var calculatedInterest = a * Math.pow((1 + (a / 10000)), (interestDates.length - i - 1));
+                maturityInterestTotal += calculatedInterest; // 만기 지급 이자의 총합을 누적
+
+                // 테이블에 추가
+                interestTable += "<tr><td>" + interestDates[i].toLocaleDateString() + "</td><td>" + getDayOfWeek(interestDates[i]) + "</td><td>" + interest.toFixed(2) + "</td><td>" + calculatedInterest.toFixed(2) + "</td></tr>";
                 totalInterest += interest;
             }
+
             document.getElementById('interestTable').innerHTML = interestTable;
 
             // 투자 기간 계산
@@ -194,17 +206,11 @@
             var interestPaymentCount = interestDates.length;
             document.getElementById('interestPaymentCount').innerHTML += "<strong>이자가 지급되는 횟수:</strong> " + interestPaymentCount + "회";
 
-
             // 채권이자 합계 표시
             document.getElementById('totalInterest').innerHTML = "<strong>채권이자 합계:</strong> " + totalInterest.toFixed(2);
 
-            // 만기 수익률 계산
-            var maturityYield = parseFloat(document.getElementById('만기수익률').value) * 100; // "만기금리" -> "만기 수익률"
-
-            // 만기 수익률 표시
-            var maturityYieldElement = document.createElement('div'); // "만기금리" -> "만기 수익률"
-            maturityYieldElement.innerHTML = "<strong>만기 지급 이자:</strong> " + maturityYield.toFixed(2); // "만기금리" -> "만기 수익률"
-            document.getElementById('totalInterest').appendChild(maturityYieldElement);
+            // 만기 지급 이자 총합 표시
+            document.getElementById('totalInterest').innerHTML += "<br><strong>만기 지급 이자 총합:</strong> " + maturityInterestTotal.toFixed(2);
         });
 
     </script>
