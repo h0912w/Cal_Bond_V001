@@ -26,10 +26,17 @@ class TestCalBond(unittest.TestCase):
         all_results = []
 
         for index, row in input_data.iterrows():
-            # 각 입력 필드를 찾고 값을 설정합니다.
-            driver.find_element(By.ID, '발행일').send_keys(row['발행일'].strftime('%Y-%m-%d'))
-            driver.find_element(By.ID, '만기일').send_keys(row['만기일'].strftime('%Y-%m-%d'))
-            driver.find_element(By.ID, '오늘날짜').send_keys(row['오늘날짜'].strftime('%Y-%m-%d'))
+            # 날짜 형식을 'YYYY-MM-DD'로 변환
+            발행일 = row['발행일'].strftime('%Y-%m-%d') if isinstance(row['발행일'], pd.Timestamp) else row['발행일']
+            만기일 = row['만기일'].strftime('%Y-%m-%d') if isinstance(row['만기일'], pd.Timestamp) else row['만기일']
+            오늘날짜 = row['오늘날짜'].strftime('%Y-%m-%d') if isinstance(row['오늘날짜'], pd.Timestamp) else row['오늘날짜']
+
+            # JavaScript를 사용하여 날짜 값을 설정합니다.
+            driver.execute_script(f"document.getElementById('발행일').value = '{발행일}'")
+            driver.execute_script(f"document.getElementById('만기일').value = '{만기일}'")
+            driver.execute_script(f"document.getElementById('오늘날짜').value = '{오늘날짜}'")
+
+            # 나머지 필드 값을 설정합니다.
             driver.find_element(By.ID, '현재가격').clear()
             driver.find_element(By.ID, '현재가격').send_keys(str(row['현재가격']))
             driver.find_element(By.ID, '표면금리').send_keys(str(row['표면금리']))
