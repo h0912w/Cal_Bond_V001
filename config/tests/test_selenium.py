@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
+import pandas as pd
 
 
 class TestCalBond(unittest.TestCase):
@@ -38,6 +39,21 @@ class TestCalBond(unittest.TestCase):
         total_interest = driver.find_element(By.ID, 'totalInterest').text
         investment_period = driver.find_element(By.ID, 'investmentPeriod').text
         interest_payment_count = driver.find_element(By.ID, 'interestPaymentCount').text
+
+        # 데이터를 엑셀 파일로 저장합니다.
+        data = {
+            "total_interest": [total_interest],
+            "investment_period": [investment_period],
+            "interest_payment_count": [interest_payment_count]
+        }
+        df = pd.DataFrame(data)
+        df.to_excel('bond_interest_summary.xlsx', index=False)
+
+        # 결과를 텍스트 파일로 저장합니다.
+        with open('bond_interest_summary.txt', 'w') as file:
+            file.write(f"채권이자 합계: {total_interest}\n")
+            file.write(f"투자 기간: {investment_period}\n")
+            file.write(f"이자가 지급되는 횟수: {interest_payment_count}\n")
 
         # 기대하는 결과와 비교합니다 (여기서는 예시로 일부 문자열이 포함되었는지 확인).
         self.assertIn('채권이자 합계:', total_interest)
