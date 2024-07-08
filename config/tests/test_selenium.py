@@ -22,6 +22,9 @@ class TestCalBond(unittest.TestCase):
         # 엑셀 파일에서 입력 데이터 로드
         input_data = pd.read_excel('input_data.xlsx')
 
+        # 모든 테스트 결과를 저장할 리스트 초기화
+        all_results = []
+
         for index, row in input_data.iterrows():
             # 각 입력 필드를 찾고 값을 설정합니다.
             driver.find_element(By.ID, '발행일').send_keys(row['발행일'].strftime('%Y-%m-%d'))
@@ -44,28 +47,27 @@ class TestCalBond(unittest.TestCase):
             investment_period = driver.find_element(By.ID, 'investmentPeriod').text
             interest_payment_count = driver.find_element(By.ID, 'interestPaymentCount').text
 
-            # 데이터를 엑셀 파일로 저장합니다.
-            data = {
-                "total_interest": [total_interest],
-                "investment_period": [investment_period],
-                "interest_payment_count": [interest_payment_count]
-            }
-            df = pd.DataFrame(data)
-            df.to_excel('bond_interest_summary.xlsx', index=False)
-
-            # 결과를 텍스트 파일로 저장합니다.
-            with open('bond_interest_summary.txt', 'w') as file:
-                file.write(f"채권이자 합계: {total_interest}\n")
-                file.write(f"투자 기간: {investment_period}\n")
-                file.write(f"이자가 지급되는 횟수: {interest_payment_count}\n")
-
-            # 기대하는 결과와 비교합니다 (여기서는 예시로 일부 문자열이 포함되었는지 확인).
-            self.assertIn('채권이자 합계:', total_interest)
-            self.assertIn('투자 기간:', investment_period)
-            self.assertIn('이자가 지급되는 횟수:', interest_payment_count)
+            # 현재 테스트 결과를 리스트에 추가
+            all_results.append({
+                "total_interest": total_interest,
+                "investment_period": investment_period,
+                "interest_payment_count": interest_payment_count
+            })
 
             # 여러 행의 데이터를 처리할 경우 브라우저를 초기 상태로 되돌립니다.
             driver.get('file:///C:/Users/hwkim/PycharmProjects/Cal_Bond_V001/config/templates/config/main.html')
+
+        # 모든 테스트 결과를 엑셀 파일로 저장합니다.
+        results_df = pd.DataFrame(all_results)
+        results_df.to_excel('bond_interest_summary.xlsx', index=False)
+
+        # 모든 테스트 결과를 텍스트 파일로 저장합니다.
+        with open('bond_interest_summary.txt', 'w') as file:
+            for result in all_results:
+                file.write(f"채권이자 합계: {result['total_interest']}\n")
+                file.write(f"투자 기간: {result['investment_period']}\n")
+                file.write(f"이자가 지급되는 횟수: {result['interest_payment_count']}\n")
+                file.write("\n")
 
     def tearDown(self):
         self.driver.quit()
